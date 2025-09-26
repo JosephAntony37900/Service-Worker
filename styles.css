@@ -1,0 +1,294 @@
+/* Variables CSS */
+:root {
+    --primary-color: #1cb698;
+    --background-color: #1e2326;
+    --text-color: #ffffff;
+    --card-background: #2a2f33;
+    --border-color: #3a4045;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --accent-color: #00d4aa;
+    --secondary-text: #a8b2b9;
+}
+
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(135deg, var(--background-color), var(--card-background));
+    padding: 2rem 1rem;
+    text-align: center;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.header h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.sw-status {
+    background: var(--card-background);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    border: 1px solid var(--border-color);
+}
+
+#sw-status-text {
+    font-size: 0.9rem;
+    color: var(--secondary-text);
+}
+
+.sw-active {
+    color: var(--primary-color) !important;
+}
+
+.sw-error {
+    color: #ff6b6b !important;
+}
+
+/* Main content */
+.main {
+    padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Grid de proyectos */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Tarjetas de proyecto */
+.project-card {
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px var(--shadow-color);
+    border-color: var(--primary-color);
+}
+
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.project-title {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.project-date {
+    color: var(--secondary-text);
+    font-size: 0.9rem;
+}
+
+.project-category {
+    background: var(--primary-color);
+    color: var(--background-color);
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.project-description {
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+.project-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.project-image:hover {
+    transform: scale(1.02);
+}
+
+.technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.tech-tag {
+    background: var(--accent-color);
+    color: var(--background-color);
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.project-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.project-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.project-link:hover {
+    background: var(--primary-color);
+    color: var(--background-color);
+    transform: translateY(-2px);
+}
+
+.gallery-button {
+    background: var(--card-background);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    cursor: pointer;
+}
+
+.gallery-button:hover {
+    background: var(--primary-color);
+    color: var(--background-color);
+}
+
+/* Modal para galería */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    background-color: var(--card-background);
+    margin: 5% auto;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    position: relative;
+}
+
+.close {
+    color: var(--secondary-text);
+    float: right;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover {
+    color: var(--primary-color);
+}
+
+.gallery-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.gallery-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease;
+}
+
+.gallery-image:hover {
+    transform: scale(1.05);
+}
+
+/* Footer */
+.footer {
+    background: var(--card-background);
+    text-align: center;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    color: var(--secondary-text);
+}
+
+/* Loading animation */
+.loading {
+    text-align: center;
+    color: var(--secondary-text);
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 2rem;
+    }
+    
+    .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .project-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .project-links {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 2% auto;
+        padding: 1rem;
+    }
+}

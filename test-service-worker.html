@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Service Worker</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e2326;
+            color: #ffffff;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background: #2a2f33;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .success {
+            background: rgba(28, 182, 152, 0.2);
+            border: 1px solid #1cb698;
+            color: #1cb698;
+        }
+        
+        .error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid #ff6b6b;
+            color: #ff6b6b;
+        }
+        
+        .info {
+            background: rgba(168, 178, 185, 0.2);
+            border: 1px solid #a8b2b9;
+            color: #a8b2b9;
+        }
+        
+        button {
+            background: #1cb698;
+            color: #1e2326;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #00d4aa;
+        }
+        
+        #logs {
+            background: #1e2326;
+            border: 1px solid #3a4045;
+            border-radius: 6px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-info { color: #1cb698; }
+        .log-error { color: #ff6b6b; }
+        .log-warning { color: #ffd93d; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test del Service Worker</h1>
+    <p>Esta página te permite probar y verificar el funcionamiento del Service Worker.</p>
+
+    <div class="container">
+        <h2>Estado del Service Worker</h2>
+        <div id="sw-support" class="status info">Verificando soporte...</div>
+        <div id="sw-registration" class="status info">Verificando registro...</div>
+        <div id="sw-status" class="status info">Verificando estado...</div>
+    </div>
+
+    <div class="container">
+        <h2>Controles</h2>
+        <button onclick="registerServiceWorker()">🔄 Re-registrar SW</button>
+        <button onclick="unregisterServiceWorker()">❌ Des-registrar SW</button>
+        <button onclick="updateServiceWorker()">🆙 Actualizar SW</button>
+        <button onclick="testCache()">💾 Test Caché</button>
+        <button onclick="clearLogs()">🗑️ Limpiar Logs</button>
+        <button onclick="goToMain()">🏠 Ir al Blog Principal</button>
+    </div>
+
+    <div class="container">
+        <h2>Cache Status</h2>
+        <div id="cache-info">
+            <p>Cargando información del caché...</p>
+        </div>
+        <button onclick="showCacheContents()">📋 Ver Contenido del Caché</button>
+        <button onclick="clearCache()">🗑️ Limpiar Caché</button>
+    </div>
+
+    <div class="container">
+        <h2>Logs en Tiempo Real</h2>
+        <div id="logs"></div>
+    </div>
+
+    <script>
+        // Función para agregar logs
+        function addLog(message, type = 'info') {
+            const logsContainer = document.getElementById('logs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        // Verificar soporte para Service Worker
+        function checkServiceWorkerSupport() {
+            const supportElement = document.getElementById('sw-support');
+            
+            if ('serviceWorker' in navigator) {
+                supportElement.textContent = '✅ Service Workers soportados';
+                supportElement.className = 'status success';
+                addLog('Service Workers soportados', 'info');
+                return true;
+            } else {
+                supportElement.textContent = '❌ Service Workers NO soportados';
+                supportElement.className = 'status error';
+                addLog('Service Workers NO soportados', 'error');
+                return false;
+            }
+        }
+
+        // Registrar Service Worker
+        async function registerServiceWorker() {
+            const registrationElement = document.getElementById('sw-registration');
+            
+            if (!checkServiceWorkerSupport()) return;
+
+            try {
+                addLog('Intentando registrar Service Worker...', 'info');
+                const registration = await navigator.serviceWorker.register('./service-worker.js', { scope: '/Service/' });
+                
+                registrationElement.textContent = '✅ Service Worker registrado exitosamente';
+                registrationElement.className = 'status success';
+                addLog(`Service Worker registrado: ${registration.scope}`, 'info');
+                
+                checkServiceWorkerStatus();
+                
+                // Escuchar eventos
+                registration.addEventListener('updatefound', () => {
+                    addLog('Nueva versión del Service Worker encontrada', 'warning');
+                });
+                
+            } catch (error) {
+                registrationElement.textContent = `❌ Error al registrar: ${error.message}`;
+                registrationElement.className = 'status error';
+                addLog(`Error al registrar Service Worker: ${error.message}`, 'error');
+            }
+        }
+
+        // Verificar estado del Service Worker
+        async function checkServiceWorkerStatus() {
+            const statusElement = document.getElementById('sw-status');
+            
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                
+                if (registration) {
+                    let status = 'Desconocido';
+                    let className = 'status info';
+                    
+                    if (registration.active) {
+                        status = '🟢 Activo';
+                        className = 'status success';
+                    } else if (registration.installing) {
+                        status = '🟡 Instalando';
+                        className = 'status info';
+                    } else if (registration.waiting) {
+                        status = '🟠 Esperando';
+                        className = 'status info';
+                    }
+                    
+                    statusElement.textContent = `Estado: ${status}`;
+                    statusElement.className = className;
+                    addLog(`Estado del Service Worker: ${status}`, 'info');
+                } else {
+                    statusElement.textContent = '❌ No hay Service Worker registrado';
+                    statusElement.className = 'status error';
+                    addLog('No hay Service Worker registrado', 'error');
+                }
+            } catch (error) {
+                statusElement.textContent = `❌ Error verificando estado: ${error.message}`;
+                statusElement.className = 'status error';
+                addLog(`Error verificando estado: ${error.message}`, 'error');
+            }
+        }
+
+        // Des-registrar Service Worker
+        async function unregisterServiceWorker() {
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    await registration.unregister();
+                    addLog('Service Worker des-registrado exitosamente', 'info');
+                    checkServiceWorkerStatus();
+                } else {
+                    addLog('No hay Service Worker para des-registrar', 'warning');
+                }
+            } catch (error) {
+                addLog(`Error des-registrando Service Worker: ${error.message}`, 'error');
+            }
+        }
+
+        // Actualizar Service Worker
+        async function updateServiceWorker() {
+            try {
+                const registration = await navigator.serviceWorker.getRegistration();
+                if (registration) {
+                    await registration.update();
+                    addLog('Verificando actualizaciones del Service Worker...', 'info');
+                } else {
+                    addLog('No hay Service Worker registrado para actualizar', 'warning');
+                }
+            } catch (error) {
+                addLog(`Error actualizando Service Worker: ${error.message}`, 'error');
+            }
+        }
+
+        // Test de caché
+        async function testCache() {
+            addLog('Iniciando test del caché...', 'info');
+            
+            try {
+                // Test de fetch que debería usar caché
+                const response = await fetch('./styles.css');
+                if (response.ok) {
+                    addLog('✅ Archivo CSS obtenido exitosamente', 'info');
+                } else {
+                    addLog('❌ Error obteniendo archivo CSS', 'error');
+                }
+                
+                const response2 = await fetch('./index.html');
+                if (response2.ok) {
+                    addLog('✅ Archivo HTML obtenido exitosamente', 'info');
+                } else {
+                    addLog('❌ Error obteniendo archivo HTML', 'error');
+                }
+                
+            } catch (error) {
+                addLog(`Error en test de caché: ${error.message}`, 'error');
+            }
+        }
+
+        // Mostrar contenido del caché
+        async function showCacheContents() {
+            const cacheInfo = document.getElementById('cache-info');
+            
+            try {
+                const cacheNames = await caches.keys();
+                addLog(`Cachés encontrados: ${cacheNames.length}`, 'info');
+                
+                let html = '<h3>Contenido del Caché:</h3>';
+                
+                for (let cacheName of cacheNames) {
+                    const cache = await caches.open(cacheName);
+                    const requests = await cache.keys();
+                    
+                    html += `<h4>${cacheName} (${requests.length} elementos):</h4><ul>`;
+                    
+                    requests.forEach(request => {
+                        html += `<li>${request.url}</li>`;
+                    });
+                    
+                    html += '</ul>';
+                    addLog(`Caché ${cacheName}: ${requests.length} elementos`, 'info');
+                }
+                
+                cacheInfo.innerHTML = html;
+                
+            } catch (error) {
+                cacheInfo.innerHTML = `<p style="color: #ff6b6b;">Error: ${error.message}</p>`;
+                addLog(`Error obteniendo contenido del caché: ${error.message}`, 'error');
+            }
+        }
+
+        // Limpiar caché
+        async function clearCache() {
+            try {
+                const cacheNames = await caches.keys();
+                
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    addLog(`Caché eliminado: ${cacheName}`, 'info');
+                }
+                
+                addLog(`✅ Todos los cachés eliminados (${cacheNames.length})`, 'info');
+                showCacheContents();
+                
+            } catch (error) {
+                addLog(`Error limpiando caché: ${error.message}`, 'error');
+            }
+        }
+
+        // Limpiar logs
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // Ir al blog principal
+        function goToMain() {
+            window.location.href = './index.html';
+        }
+
+        // Escuchar mensajes del Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                addLog(`Mensaje del SW: ${event.data.message || JSON.stringify(event.data)}`, 'info');
+            });
+        }
+
+        // Inicializar al cargar la página
+        window.addEventListener('load', () => {
+            addLog('=== Test del Service Worker Iniciado ===', 'info');
+            checkServiceWorkerSupport();
+            
+            if ('serviceWorker' in navigator) {
+                checkServiceWorkerStatus();
+                showCacheContents();
+            }
+        });
+    </script>
+</body>
+</html>
