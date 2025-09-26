@@ -5,7 +5,6 @@ if ('serviceWorker' in navigator) {
             console.log('service Worker registrado exitosamente:', registration.scope);
             updateSWStatus('Service Worker activo', 'sw-active');
             
-            // Escuchar actualizaciones del Service Worker
             registration.addEventListener('updatefound', () => {
                 console.log('Nueva versión del Service Worker disponible');
             });
@@ -16,7 +15,6 @@ if ('serviceWorker' in navigator) {
         }
     });
 
-    // Escuchar mensajes del Service Worker
     navigator.serviceWorker.addEventListener('message', (event) => {
         console.log('Mensaje del Service Worker:', event.data);
         if (event.data.type === 'CACHE_UPDATED') {
@@ -28,7 +26,6 @@ if ('serviceWorker' in navigator) {
     updateSWStatus('Service Worker no soportado', 'sw-error');
 }
 
-// Función para actualizar el estado del Service Worker en la UI
 function updateSWStatus(message, className) {
     const statusElement = document.getElementById('sw-status-text');
     if (statusElement) {

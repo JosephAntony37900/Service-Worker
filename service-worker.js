@@ -24,7 +24,6 @@ self.addEventListener('install', (event) => {
             })
             .then(() => {
                 console.log('Service Worker: Instalación completada');
-                // Fuerza la activación inmediata del nuevo Service Worker
                 return self.skipWaiting();
             })
             .catch((error) => {
@@ -121,7 +120,6 @@ function cacheFirstStrategy(request) {
 function networkFirstStrategy(request) {
     return fetch(request)
         .then((networkResponse) => {
-            // Si la respuesta de red es exitosa, actualizar caché
             if (networkResponse && networkResponse.status === 200) {
                 if (request.url.startsWith('http')) { 
                     const responseClone = networkResponse.clone();
